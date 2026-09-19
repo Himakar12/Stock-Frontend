@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError, map, throwError } from 'rxjs';
 import { environment } from './environment';
 
 export interface HistoricalData { ticker: string; date: string; open: number; high: number; low: number; close: number; volume: number; previousClose: number; movingAverage30: number; last7Days: number[]; marketStatus: string; asOf: string; }
@@ -24,6 +24,8 @@ export class StockService {
   deleteWatchlistStock(id: number, userId = 1): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/watchlist/${id}`, { params: { userId } }).pipe(catchError(this.handleError)); }
   getAnalysisHistory(page = 0, size = 20, ticker?: string, userId = 1): Observable<HistoryPage> { let params: Record<string, string | number> = { userId, page, size }; if (ticker?.trim()) params = { ...params, ticker: ticker.trim() }; return this.http.get<HistoryPage>(`${this.apiUrl}/history`, { params }).pipe(catchError(this.handleError)); }
   getAnalysisHistoryItem(id: number, userId = 1): Observable<AnalysisHistoryItem> { return this.http.get<AnalysisHistoryItem>(`${this.apiUrl}/history/${id}`, { params: { userId } }).pipe(catchError(this.handleError)); }
+  getPastAnalyses(size = 50, userId = 1): Observable<AnalysisHistoryItem[]> { return this.getAnalysisHistory(0, size, undefined, userId).pipe(map(page => page.content)); }
+  searchStockByTrend(ticker: string): Observable<TrendingStock> { return this.getTrendingStocks().pipe(map(items => { const match = items.find(item => item.symbol.toUpperCase() === ticker.trim().toUpperCase()); if (!match) throw new Error(`No data found for ${ticker}`); return match; })); }
   analyzeChart(file: File, userId = 1): Observable<AnalysisResult> { const formData = new FormData(); formData.append('chartImage', file); formData.append('userId', userId.toString()); return this.http.post<AnalysisResult>(`${this.apiUrl}/analyze`, formData).pipe(catchError(this.handleError)); }
   private handleError(error: HttpErrorResponse): Observable<never> { const message = error.error?.message || error.error?.error || `Request failed (${error.status})`; return throwError(() => new Error(message)); }
 }
