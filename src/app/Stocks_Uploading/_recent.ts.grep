@@ -1,0 +1,13 @@
+== Parse stocks.ts / stock-service.ts segment dump ==
+total lines: 144
+=== grep -nE with context on key terms, final positions ===
+getTrendingStocks              : 1 occurrences
+    line 101: ...getTrendingStocks(limit = 5): Observable<TrendingStock[]> {
+getPastAnalyses                : 0 occurrences
+getTrendingStockByTrendName    : 0 occurrences
+HistoricalData                 : 4 occurrences
+    line 6: ...export interface HistoricalData {
+    line 88: ...historicalData: HistoricalData;
+    line 106: ...getLatestRecords(limit = 50): Observable<HistoricalData[]> {
+    line 107: ...return this.http.get<HistoricalData[]>(`${this.apiUrl}/records/latest`, { params: { limit: limit.toString() } })
+trendActions                   : 0 occurrences

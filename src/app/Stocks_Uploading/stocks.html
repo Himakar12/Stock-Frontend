@@ -1,0 +1,109 @@
+<div class="stock-analyzer">
+  <h1>📈 Stock Chart Analyzer</h1>
+
+  <section class="booming-radar">
+    <div class="radar-header">
+      <div class="radar-title-box">
+        <h2>🔥 Top 5 Booming Stocks Radar</h2>
+        <span class="live-pill"><span class="pulse-dot"></span> Live Market Analysis</span>
+      </div>
+      <p class="radar-subtitle">Institutional multi-agent quantitative and fundamental breakdown of high-momentum market leaders.</p>
+    </div>
+
+    @if (isTrendingLoading()) {
+      <div class="radar-loading animate__animated animate__pulse animate__infinite animate__slow">
+        <span class="loading-dot"></span> Loading live market data…
+      </div>
+    } @else if (currentStock(); as stock) {
+      <div class="radar-carousel">
+        <button class="carousel-nav prev" (click)="prevStock()" aria-label="Previous stock">‹</button>
+
+        <div class="carousel-viewport">
+          <div class="trending-card-single {{ animateClass() }}" [class.expanded]="expandedStock() === stock.symbol">
+            <div class="card-main" (click)="toggleExpand(stock.symbol)">
+              <div class="card-top">
+                <div class="symbol-info">
+                  <span class="ticker-tag">{{ stock.symbol }}</span>
+                  <span class="company-name">{{ stock.name }}</span>
+                </div>
+                <span [class]="'sentiment-tag ' + getSentimentClass(stock.sentiment)">
+                  {{ stock.sentiment }}
+                </span>
+              </div>
+
+              <div class="price-row">
+                <div class="price-val">${{ stock.price | number:'1.2-2' }}</div>
+                <span class="gain-badge">{{ stock.change3Mo }} (3Mo)</span>
+              </div>
+
+              <div class="range-box">
+                <div class="range-labels">
+                  <span>52W L: ${{ stock.low52 | number:'1.2-2' }}</span>
+                  <span>52W H: ${{ stock.high52 | number:'1.2-2' }}</span>
+                </div>
+                <div class="range-bar">
+                  <div class="range-fill" [style.width.%]="getRangePercentage(stock.price, stock.low52, stock.high52)"></div>
+                </div>
+              </div>
+
+              <div class="catalyst-row">
+                <span class="catalyst-label">⚡ Catalyst:</span>
+                <span class="catalyst-text">{{ stock.catalyst }}</span>
+              </div>
+
+              <button class="expand-btn" (click)="$event.stopPropagation(); toggleExpand(stock.symbol)">
+                {{ expandedStock() === stock.symbol ? '▲ Hide Analysis' : '▼ View AI Thesis & Risks' }}
+              </button>
+            </div>
+
+            @if (expandedStock() === stock.symbol) {
+              <div class="card-details animate__animated animate__fadeIn animate__faster">
+                <div class="details-summary">
+                  <h4>🧠 Executive Thesis</h4>
+                  <p>{{ stock.executiveSummary }}</p>
+                </div>
+
+                <div class="details-dual">
+                  <div class="col bull">
+                    <h5>🟢 Bull Drivers</h5>
+                    <ul>
+                      @for (bull of stock.bullCase; track bull) {
+                        <li>{{ bull }}</li>
+                      }
+                    </ul>
+                  </div>
+                  <div class="col bear">
+                    <h5>🔴 Bear Concerns</h5>
+                    <ul>
+                      @for (bear of stock.bearCase; track bear) {
+                        <li>{{ bear }}</li>
+                      }
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="details-risk">
+                  <h5>⚠️ Key Risk Factor</h5>
+                  <p>{{ stock.keyRisk }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <button class="carousel-nav next" (click)="nextStock()" aria-label="Next stock">›</button>
+      </div>
+
+      <div class="carousel-dots">
+        @for (s of trendingStocks(); track s.symbol; let i = $index) {
+          <button
+            class="dot"
+            [class.active]="s.symbol === stock.symbol"
+            (click)="goToStock(i)"
+            [attr.aria-label]="'Go to ' + s.symbol">
+          </button>
+        }
+      </div>
+    }
+  </section>
+</div>

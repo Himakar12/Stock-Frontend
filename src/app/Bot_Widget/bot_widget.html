@@ -1,0 +1,124 @@
+<!-- Floating launcher button -->
+<button
+  class="bot-fab"
+  [class.open]="isOpen()"
+  (click)="toggleOpen()"
+  aria-label="Open AI Stock Analyst">
+  @if (!isOpen()) {
+    <span class="fab-icon">🤖</span>
+  } @else {
+    <span class="fab-icon">✕</span>
+  }
+</button>
+
+<!-- Panel -->
+@if (isOpen()) {
+  <div class="bot-panel">
+    <div class="bot-header">
+      <div class="bot-header-title">
+        <span class="bot-avatar">🤖</span>
+        <div>
+          <p class="bot-name">AI Stock Analyst</p>
+          <span class="bot-status"><span class="status-dot"></span> Online</span>
+        </div>
+      </div>
+      <button class="bot-close" (click)="toggleOpen()" aria-label="Close">✕</button>
+    </div>
+
+    <div class="bot-body">
+
+      <!-- Idle: nothing uploaded yet -->
+      @if (state() === 'idle') {
+        <div class="bot-message">
+          <p>Upload a chart screenshot and I'll analyze it for you — ticker, technicals, ML forecast, and an AI thesis.</p>
+        </div>
+        <label class="bot-upload-btn">
+          <input type="file" accept="image/png,image/jpeg,image/jpg" (change)="onFileSelected($event)" />
+          📁 Upload Chart
+        </label>
+      }
+
+      <!-- Preview: file chosen, not yet analyzed -->
+      @if (state() === 'preview' && imagePreview()) {
+        <div class="bot-preview">
+          <img [src]="imagePreview()" alt="Chart preview" />
+        </div>
+        <div class="bot-actions">
+          <button class="bot-btn-secondary" (click)="reset()">Change</button>
+          <button class="bot-btn-primary" (click)="analyze()" [disabled]="!canAnalyze()">
+            🔍 Analyze Chart
+          </button>
+        </div>
+      }
+
+      <!-- Analyzing -->
+      @if (state() === 'analyzing') {
+        <div class="bot-loading">
+          <span class="bot-spinner"></span>
+          <p>Analyzing chart…</p>
+        </div>
+      }
+
+      <!-- Error -->
+      @if (state() === 'error') {
+        <div class="bot-message bot-error">
+          <p>{{ errorMessage() }}</p>
+        </div>
+        <button class="bot-btn-secondary full" (click)="reset()">Try Again</button>
+      }
+
+      <!-- Result -->
+      @if (state() === 'result' && result(); as res) {
+        <div class="bot-result">
+          <div class="bot-result-top">
+            <span class="bot-ticker">{{ res.ticker }}</span>
+            <span [class]="'bot-sentiment ' + getSentimentClass(res.prediction.sentiment)">
+              {{ res.prediction.sentiment | uppercase }}
+            </span>
+          </div>
+
+          <div class="bot-market-status" [class.live]="res.historicalData.marketStatus === 'REGULAR'">
+            <span class="status-indicator"></span>
+            {{ res.historicalData.marketStatus === 'REGULAR' ? 'Live — price still moving' : 'Market closed — last session close' }}
+          </div>
+
+          <div class="bot-result-row">
+            <span class="bot-label">Price</span>
+            <span class="bot-value">${{ res.historicalData.close | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="bot-result-row">
+            <span class="bot-label">Predicted Range</span>
+            <span class="bot-value">
+              ${{ res.prediction.low | number:'1.2-2' }} — ${{ res.prediction.high | number:'1.2-2' }}
+            </span>
+          </div>
+
+          <div class="bot-result-row">
+            <span class="bot-label">Confidence</span>
+            <span class="bot-value">{{ res.prediction.confidence }}%</span>
+          </div>
+
+          <div class="bot-result-row">
+            <span class="bot-label">Trend</span>
+            <span [class]="'bot-trend-badge ' + res.analysis.trend">
+              {{ res.analysis.trend | uppercase }}
+            </span>
+          </div>
+
+          <div class="bot-reasoning">
+            <p>{{ res.prediction.reasoning }}</p>
+          </div>
+
+          @if (res.debateResult?.debateTriggered) {
+            <div class="bot-debate-flag">
+              ⚡ ML and technicals disagreed — a 3-way debate ran before this result.
+            </div>
+          }
+
+          <button class="bot-btn-secondary full" (click)="reset()">Analyze Another Chart</button>
+        </div>
+      }
+    </div>
+  </div>
+}
