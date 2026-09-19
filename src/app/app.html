@@ -1,2 +1,13 @@
-<app-stock-upload/>
-<app-bot-widget></app-bot-widget>
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" routerLink="/dashboard"><span class="brand-mark">↗</span><span>ChartLens</span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+      <a routerLink="/watchlist" routerLinkActive="active">Watchlist</a>
+      <a routerLink="/history" routerLinkActive="active">History</a>
+    </nav>
+    <a class="analyze-link" routerLink="/analyze">Analyze chart <span>→</span></a>
+  </header>
+  <main class="page-content"><router-outlet /></main>
+  <app-bot-widget />
+</div>
